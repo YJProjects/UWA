@@ -1,0 +1,9 @@
+.env
+serviceAccountKey.json
+uwa-backend/.venv
+**/__pycache__/
+*.py[cod]
+*$py.class
+uwa-frontend/node_modules
+.DS_Store
+.npmrc

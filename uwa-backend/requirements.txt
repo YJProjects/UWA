@@ -4,3 +4,5 @@ python-dotenv
 pydantic
 dotenv
 psycopg[binary,pool]
+firebase_admin
+

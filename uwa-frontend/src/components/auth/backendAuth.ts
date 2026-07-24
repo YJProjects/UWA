@@ -1,6 +1,8 @@
 import { BACKEND_URL } from "../../config";
 
 interface SignUpRequest {
+  firstName : string,
+  lastName : string
   email: string;
   password: string;
 }
@@ -10,7 +12,7 @@ interface SignUpResponse {
   message : string
 }
 
-async function signUpUser(email: string, password: string): Promise<SignUpResponse> {
+async function signUpUser(firstName: string, lastName: string, email: string, password: string): Promise<SignUpResponse> {
   const url = BACKEND_URL + "/auth/signup"
   const response = await fetch(url, {
     method: "POST",
@@ -18,6 +20,8 @@ async function signUpUser(email: string, password: string): Promise<SignUpRespon
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
+      firstName,
+      lastName,
       email,
       password,
     } satisfies SignUpRequest),
@@ -30,7 +34,9 @@ async function signUpUser(email: string, password: string): Promise<SignUpRespon
 
   const data = await response.json();
 
-  console.log(data)
+  if (Number(data.status) != 400) {
+    alert(data.err)
+  }
   return data;
 }
 
