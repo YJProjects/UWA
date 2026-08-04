@@ -22,11 +22,18 @@ logger = logging.getLogger(__name__)
 class SignupPersistenceError(Exception):
     """Database persistence failed after Firebase user creation was rolled back."""
 
+
 class EmailVerificationLinkSendError(Exception):
     """Unable to send verification email to user."""
 
+
 class SignupRollbackError(Exception):
     """Both database persistence and the compensating Firebase deletion failed."""
+
+
+class SignupAuthServiceError(Exception):
+    """Firebase Authentication could not process the signup request."""
+
 
 def send_verification_email(receiver_email : str, link : str):
     sender_email = BOT_EMAIL
@@ -84,7 +91,13 @@ async def process_user_signup(
 ) -> tuple[bool, str | None, int | None]:
     """Create matching Firebase Auth and PostgreSQL user records."""
 
-    auth_client = FireAuth()
+    try:
+        auth_client = FireAuth()
+    except Exception as auth_configuration_error:
+        logger.exception("Could not initialize Firebase Authentication")
+        raise SignupAuthServiceError(
+            "Firebase Authentication is unavailable"
+        ) from auth_configuration_error
 
     try:
         user_record = await run_in_threadpool(
@@ -97,6 +110,11 @@ async def process_user_signup(
         return False, "An account with this email already exists.", status.HTTP_409_CONFLICT
     except ValueError:
         return False, "Firebase rejected the email address.", status.HTTP_400_BAD_REQUEST
+    except Exception as auth_error:
+        logger.exception("Firebase could not create the user")
+        raise SignupAuthServiceError(
+            "Firebase Authentication could not create the user"
+        ) from auth_error
 
     try:
         url = await run_in_threadpool(
@@ -217,6 +235,11 @@ async def sign_up_user(data: SignUpRequest):
         return api_response(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "Unable to send user verification email.",
+        )
+    except SignupAuthServiceError:
+        return api_response(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Authentication service is unavailable. Please try again later.",
         )
 
     if not is_valid_email:
