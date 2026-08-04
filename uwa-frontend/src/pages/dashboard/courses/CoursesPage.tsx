@@ -73,7 +73,8 @@ export default function CoursesPage() {
         setSaveError(null);
 
         try {
-            await saveUserCourse(user.uid, selectedCourse.code, selectedSection.classNumber);
+            const idToken = await user.getIdToken();
+            await saveUserCourse(idToken, selectedCourse.code, selectedSection.classNumber);
             setSavedSectionIds((currentIds) => new Set(currentIds).add(selectedSection.id));
         } catch (saveCourseError) {
             setSaveError(saveCourseError instanceof Error ? saveCourseError.message : "Unable to save this course.");

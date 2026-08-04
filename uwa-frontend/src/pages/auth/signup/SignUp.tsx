@@ -2,6 +2,7 @@ import "./SignUp.css"
 import { useState } from "react"
 import { BACKEND_URL } from "../../../config";
 import { useNavigate } from "react-router-dom";
+import loadingGif from "../../../assets/loading.gif";
 
 interface SignUpRequest {
   firstName : string,
@@ -134,7 +135,7 @@ export default function SignUp() {
                     <input type="submit" value="Sign Up" />
 
                     <div className="signup-transition" style={{ display: isTransitionVisible ? "" : "none" }}>
-                        <img className="signup-transition-gif" src={"src/assets/loading.gif"} alt="Loading animation" /> Signing Up User!
+                        <img className="signup-transition-gif" src={loadingGif} alt="Loading animation" /> Signing Up User!
                     </div>
                 </div>
             </form>

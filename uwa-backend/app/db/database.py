@@ -15,7 +15,7 @@ class Database:
         self,
         *,
         min_size: int = 1,
-        max_size: int = 10,
+        max_size: int = 2,
     ) -> None:
         self.database_url = DATABASE_URL
         if not self.database_url:

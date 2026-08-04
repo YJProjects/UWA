@@ -135,10 +135,14 @@ created_user = rows[0]
 
 ## API reference
 
-### `Database(min_size=1, max_size=10)`
+### `Database(min_size=1, max_size=2)`
 
 Creates the database manager. The constructor reads `DATABASE_URL`, but it does
 not open any connections.
+
+The small default maximum is intentional for serverless deployments, where
+multiple function instances can each own a pool. Prefer a hosted provider's
+pooled PostgreSQL URL in production.
 
 ### `await connect()`
 

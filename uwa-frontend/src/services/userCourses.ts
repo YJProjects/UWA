@@ -1,7 +1,6 @@
 import { BACKEND_URL } from "../config";
 
 interface SaveUserCourseRequest {
-    user_id: string;
     course: string;
     section: string;
 }
@@ -12,9 +11,8 @@ interface SaveUserCourseResponse {
     message?: string;
 }
 
-export async function saveUserCourse(userId: string, courseCode: string, sectionNumber: string): Promise<void> {
+export async function saveUserCourse(idToken: string, courseCode: string, sectionNumber: string): Promise<void> {
     const requestBody: SaveUserCourseRequest = {
-        user_id: userId,
         course: courseCode,
         section: sectionNumber,
     };
@@ -23,6 +21,7 @@ export async function saveUserCourse(userId: string, courseCode: string, section
         method: "POST",
         headers: {
             Accept: "application/json",
+            Authorization: `Bearer ${idToken}`,
             "Content-Type": "application/json",
         },
         body: JSON.stringify(requestBody),

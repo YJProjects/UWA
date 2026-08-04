@@ -30,7 +30,8 @@ class SignupRollbackError(Exception):
 
 def send_verification_email(receiver_email : str, link : str):
     sender_email = BOT_EMAIL
-    receiver_email = receiver_email
+    if not sender_email or not BOT_EMAIL_APP_PASSWORD:
+        raise RuntimeError("Verification email credentials are not configured")
 
     message = EmailMessage()
 
@@ -45,13 +46,11 @@ def send_verification_email(receiver_email : str, link : str):
     SENDER_EMAIL = sender_email
     SENDER_PASSWORD = BOT_EMAIL_APP_PASSWORD
 
-    try:
-        # Establish a secure SSL connection
-        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
-            server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            server.send_message(message)
-    except Exception as e:
-        print(f"Failed to send email: {e}")
+    # SMTP is blocking I/O. The async caller runs this function in a worker
+    # thread so one email does not block the server's event loop.
+    with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(message)
 
 
 def validate_signup_password(password: str):
@@ -100,8 +99,11 @@ async def process_user_signup(
         return False, "Firebase rejected the email address.", status.HTTP_400_BAD_REQUEST
 
     try:
-        url = auth_client.generate_verification_link(email)
-        send_verification_email(email, url)
+        url = await run_in_threadpool(
+            auth_client.generate_verification_link,
+            email,
+        )
+        await run_in_threadpool(send_verification_email, email, url)
 
     except Exception as signup_error:
         logger.exception(

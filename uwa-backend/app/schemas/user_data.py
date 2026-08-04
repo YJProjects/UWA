@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
 
 class SaveUserCourseInput(BaseModel):
-    user_id : str
-    course : str
-    section : str
+    course: str = Field(min_length=1, max_length=16)
+    section: str = Field(min_length=1, max_length=32)
