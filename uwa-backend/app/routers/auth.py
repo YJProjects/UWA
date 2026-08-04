@@ -93,6 +93,7 @@ async def process_user_signup(
             email,
             password,
         )
+        
     except firebase_auth.EmailAlreadyExistsError:
         return False, "An account with this email already exists.", status.HTTP_409_CONFLICT
     except ValueError:
