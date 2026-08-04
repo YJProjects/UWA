@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-import json
 
 load_dotenv()
 
@@ -18,7 +17,7 @@ CORS_ORIGINS = [
 
 # Vercel receives the service-account JSON through an encrypted environment
 # variable. The path fallback keeps local and Docker development compatible.
-FIREBASE_SERVICE_ACCOUNT_JSON = json.loads(os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON"))
+FIREBASE_SERVICE_ACCOUNT_JSON = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
 FIREAUTH_CREDENTIALS_PATH = Path(
     os.getenv(
         "FIREAUTH_CREDENTIALS_PATH",
