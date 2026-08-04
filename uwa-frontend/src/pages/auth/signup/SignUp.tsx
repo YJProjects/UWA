@@ -1,15 +1,54 @@
-import {signUpUser} from "../backendAuth.ts";
-import NavBar from "../../navbar/NavBar"
 import "./SignUp.css"
 import { useState } from "react"
+import { BACKEND_URL } from "../../../config";
+import { useNavigate } from "react-router-dom";
+
+interface SignUpRequest {
+  firstName : string,
+  lastName : string
+  email: string;
+  password: string;
+}
+
+interface SignUpResponse {
+  status: number;
+  message: string;
+}
 
 export default function SignUp() {
-    const [password, setPassword] = useState('');
+    const [, setPassword] = useState('');
     const [passwordRules, setPasswordRules] = useState({
         length: false,
         number: false,
         capital: false
     });
+    
+    const [isTransitionVisible, setTransitionVisible] = useState(false);
+    const navigate = useNavigate();
+
+    async function signUpUser(firstName: string, lastName: string, email: string, password: string): Promise<SignUpResponse> {
+      const url = BACKEND_URL + "/auth/signup"
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+        } satisfies SignUpRequest),
+      });
+
+      const data = await response.json() as SignUpResponse;
+
+      if (!response.ok) {
+        throw new Error(data.message || "Signup failed");
+      }
+
+      return data;
+    }
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -20,7 +59,22 @@ export default function SignUp() {
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
 
-        await signUpUser(firstName, lastName, email, password)
+        setTransitionVisible(true);
+
+        try {
+            await signUpUser(firstName, lastName, email, password);
+            
+            setTransitionVisible(false);
+
+            alert("Verification email sent. Please verify your email before logging in.");
+            navigate("/", { replace: true });
+        } catch (error) {
+            const message = error instanceof Error
+                ? error.message
+                : "Signup failed. Please try again.";
+            alert(message);
+            setTransitionVisible(false);
+        }
     }
 
     function validatePassword(event: React.ChangeEvent<HTMLInputElement>) {
@@ -78,6 +132,10 @@ export default function SignUp() {
                     </div>
 
                     <input type="submit" value="Sign Up" />
+
+                    <div className="signup-transition" style={{ display: isTransitionVisible ? "" : "none" }}>
+                        <img className="signup-transition-gif" src={"src/assets/loading.gif"} alt="Loading animation" /> Signing Up User!
+                    </div>
                 </div>
             </form>
         </div>

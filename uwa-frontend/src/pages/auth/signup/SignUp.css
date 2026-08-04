@@ -133,3 +133,16 @@
 .signup-form input[type="submit"]:active {
     transform: translateY(0);
 }
+
+.signup-form .signup-transition {
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5vh;
+}
+
+.signup-form .signup-transition .signup-transition-gif{
+    flex-shrink: 1;
+    height: 5vh;
+}

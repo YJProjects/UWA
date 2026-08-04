@@ -1,4 +1,10 @@
 body {
-    margin: 0px;
-    padding: 0px;
+    min-width: 320px;
+    margin: 0;
+    padding: 0;
+}
+
+button,
+input {
+    font: inherit;
 }

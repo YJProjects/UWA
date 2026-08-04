@@ -12,3 +12,6 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 FIREAUTH_CREDENTIALS_PATH = (
     BACKEND_DIR.parent / "serviceAccountKey.json"
 ).resolve()
+
+BOT_EMAIL = os.getenv("BOT_EMAIL")
+BOT_EMAIL_APP_PASSWORD = os.getenv("BOT_EMAIL_APP_PASSWORD")

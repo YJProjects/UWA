@@ -2,7 +2,7 @@ import firebase_admin
 from firebase_admin import auth as firebase_auth
 from firebase_admin import credentials
 
-from app.config import FIREAUTH_CREDENTIALS_PATH
+from app.config import FIREAUTH_CREDENTIALS_PATH, FRONTEND_ORIGIN
 
 
 class FireAuth:
@@ -29,6 +29,17 @@ class FireAuth:
     def delete_user(self, uid: str) -> None:
         """Delete a Firebase user by UID."""
         firebase_auth.delete_user(uid, app=self.app)
+
+    def generate_verification_link(self, email: str) -> str:
+        action_code_settings = firebase_auth.ActionCodeSettings(
+            url=FRONTEND_ORIGIN,
+            handle_code_in_app=False,
+        )
+
+        return firebase_auth.generate_email_verification_link(
+            email,
+            action_code_settings
+        )
 
     def _create_app(self, credential):
         try:

@@ -1,0 +1,201 @@
+.login-page {
+    --ink: #202124;
+    --muted: #6f7278;
+    --line: #dedfe3;
+    --accent: #5f55d9;
+    min-height: 100svh;
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    padding: 48px 24px 80px;
+    color: var(--ink);
+    background:
+        linear-gradient(rgba(95, 85, 217, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(95, 85, 217, 0.035) 1px, transparent 1px),
+        #fafafa;
+    background-size: 32px 32px;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.login-card {
+    width: min(100%, 400px);
+    box-sizing: border-box;
+    padding: 40px;
+    border: 1px solid rgba(222, 223, 227, 0.9);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 18px 50px rgba(31, 32, 38, 0.07);
+}
+
+.login-header {
+    text-align: center;
+}
+
+.login-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 36px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.login-brand-mark {
+    display: inline-grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 9px;
+    color: #fff;
+    background: var(--accent);
+    font-family: Georgia, serif;
+    font-size: 16px;
+    letter-spacing: 0;
+}
+
+.login-header h1 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+}
+
+.login-header p {
+    margin: 12px auto 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.login-form {
+    display: grid;
+    gap: 20px;
+    margin-top: 34px;
+}
+
+.login-field {
+    display: grid;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.login-field input {
+    width: 100%;
+    min-height: 48px;
+    box-sizing: border-box;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    outline: none;
+    color: var(--ink);
+    background: #fff;
+    font: inherit;
+    font-weight: 400;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.login-field input::placeholder {
+    color: #a5a7ac;
+}
+
+.login-field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(95, 85, 217, 0.12);
+}
+
+.login-button,
+.signup-button {
+    min-height: 48px;
+    display: flex;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.login-button {
+    margin-top: 4px;
+    border: 1px solid var(--accent);
+    color: #fff;
+    background: var(--accent);
+}
+
+.login-button:hover {
+    background: #5047c5;
+}
+
+.login-button:active,
+.signup-button:active {
+    transform: translateY(1px);
+}
+
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 26px 0 18px;
+    color: #8a8d93;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: "";
+    width: 100%;
+    height: 1px;
+    background: #e9e9ec;
+}
+
+.signup-button {
+    border: 1px solid var(--line);
+    color: var(--ink);
+    background: #fff;
+}
+
+.signup-button:hover {
+    border-color: #b9b6df;
+    background: #f8f7ff;
+}
+
+.login-footer {
+    position: fixed;
+    bottom: 24px;
+    margin: 0;
+    color: #999ba1;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+}
+
+@media (max-width: 480px) {
+    .login-page {
+        padding: 20px 16px 64px;
+        background: #fff;
+    }
+
+    .login-card {
+        padding: 28px 22px;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .login-brand {
+        margin-bottom: 40px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-field input,
+    .login-button,
+    .signup-button {
+        transition: none;
+    }
+}
