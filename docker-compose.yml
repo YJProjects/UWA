@@ -1,23 +1,9 @@
 services:
-  backend:
+  data-ingestion:
     build:
       context: .
-      dockerfile: uwa-backend/Dockerfile
+      dockerfile: data-ingestion/Dockerfile
     ports:
       - "8000:8000"
-    environment:
-      FRONTEND_ORIGIN: http://localhost:5173
     volumes:
-      - ./uwa-backend:/app
-
-  frontend:
-    build:
-      context: .
-      dockerfile: uwa-frontend/Dockerfile
-    ports:
-      - "5173:5173"
-    environment:
-      VITE_BACKEND_URL: http://localhost:8000
-    volumes:
-      - ./uwa-frontend:/app
-      - /app/node_modules
+      - ./data-ingestion:/app

@@ -1,172 +1,169 @@
-# Data Ingestion Service
+# Data Ingestion
 
-This folder contains the data ingestion pipeline responsible for collecting and maintaining UMD course and section data used by the application.
+This folder contains the data ingestion system for the UMD Waitlist Alert project.
 
-## Purpose
+Its job is to scrape course information from Testudo and keep the PostgreSQL database updated.
 
-The ingestion service is responsible for the following workflow:
+## What It Does
 
-1. **Scrape course data from Testudo**
+There are two main scraping processes.
 
-   * Retrieve course and section information from the UMD Testudo Schedule of Classes.
-   * Extract relevant fields such as course information, section numbers, instructors, seat availability, and waitlist counts.
+### 1. Course Catalog Scraper
 
-2. **Incrementally update the database**
+This scraper collects general course and section information such as:
 
-   * Compare newly scraped course data with the data currently stored in PostgreSQL.
-   * Insert newly discovered courses or sections.
-   * Update existing records only when their values have changed.
-   * Track important availability transitions, particularly when a section changes from `0` open seats to `1+`.
+* Course code
+* Course name
+* Description
+* Credits
+* Section number
+* Professor
+* Meeting time
+* Location
 
-3. **Logging and monitoring**
+This data does not change very often, so the scraper will run when a new semester becomes available and periodically afterward to keep the database updated.
 
-   * Log the start and completion of every ingestion run.
-   * Record the number of courses and sections processed.
-   * Log inserted, updated, and unchanged records.
-   * Record scraping, parsing, database, and network failures.
-   * Include timestamps and useful context for debugging failed ingestion runs.
+### 2. Course Availability Scraper
+
+This scraper checks seat availability for course sections.
+
+It tracks values such as:
+
+* Open seats
+* Waitlist count
+* Total seats
+
+Sections that users are actively monitoring will be checked approximately every **5 minutes**.
+
+When availability changes, the new values will be stored in PostgreSQL.
+
+Example:
+
+```text
+CMSC216-0101
+
+0 open seats
+      ↓
+2 open seats
+```
+
+This change can then trigger the notification system to alert users monitoring that section.
 
 ## Data Flow
 
 ```text
 Testudo
-   │
-   ▼
+   ↓
 Scraper
-BeautifulSoup + Requests
-   │
-   ▼
-Data Parsing / Normalization
-   │
-   ▼
-Compare with existing records
-   │
-   ▼
+   ↓
+Parse Course Data
+   ↓
 PostgreSQL
-   │
-   ├── New records → INSERT
-   │
-   ├── Changed records → UPDATE
-   │
-   └── Unchanged records → Ignore
-   │
-   ▼
-Database change / webhook
-   │
-   ▼
-UWA Backend
-   │
-   ▼
-Notify users monitoring affected sections
+   ↓
+Backend / Notification System
+   ↓
+Email Alert
 ```
 
-After a successful ingestion cycle, relevant database changes should trigger the backend notification workflow.
+The ingestion service is responsible for **finding and storing changes**.
 
-For example:
-
-```text
-Previous state:
-CMSC216-0101 → 0 open seats
-
-New scraped state:
-CMSC216-0101 → 2 open seats
-
-Database updated
-      ↓
-Availability-change event triggered
-      ↓
-Backend identifies users monitoring CMSC216-0101
-      ↓
-Users receive a seat-availability notification
-```
-
-The ingestion service itself should focus on **collecting and updating course data**. User notification logic should remain within the backend rather than being implemented directly inside the scraper.
+The backend is responsible for **determining which users should be notified and sending notifications**.
 
 ## Tech Stack
 
-### Web Scraping
+* **Requests** — Fetch Testudo pages
+* **BeautifulSoup** — Parse course information
+* **PostgreSQL** — Store course and section data
+* **Psycopg 3** — Connect Python to PostgreSQL
+* **FastAPI / Uvicorn** — Run the containerized ingestion service
+* **Python logging** — Track scraper runs and errors
 
-* **Requests** — Retrieve HTML pages from Testudo.
-* **BeautifulSoup** — Parse HTML and extract course and section information.
-
-### Database
-
-* **PostgreSQL** — Store normalized course and section data.
-* **psycopg2** — Connect to PostgreSQL and perform database operations.
-
-### Logging
-
-* Python's built-in `logging` module for:
-
-  * ingestion lifecycle events
-  * scraper failures
-  * database errors
-  * record counts
-  * availability changes
-
-## Suggested Folder Structure
+## Folder Structure
 
 ```text
 data-ingestion/
 ├── src/
-│   ├── scraper/
-│   │   ├── testudo_scraper.py
+│   ├── catalog/
+│   │   ├── __init__.py
+│   │   ├── scraper.py
+│   │   └── parser.py
+│   │
+│   ├── availability/
+│   │   ├── __init__.py
+│   │   ├── scraper.py
 │   │   └── parser.py
 │   │
 │   ├── database/
+│   │   ├── __init__.py
 │   │   ├── connection.py
 │   │   └── repository.py
 │   │
 │   ├── models/
-│   │   └── course.py
+│   │   ├── __init__.py
+│   │   ├── course.py
+│   │   └── section.py
 │   │
-│   ├── services/
-│   │   └── ingestion_service.py
-│   │
+│   ├── __init__.py
 │   ├── config.py
 │   └── main.py
 │
 ├── tests/
-│   ├── test_parser.py
-│   └── test_ingestion.py
-│
-├── logs/
-│
+├── Dockerfile
 ├── requirements.txt
 ├── .env.example
-├── Dockerfile
 └── README.md
 ```
 
-## Responsibilities
+## Logging
 
-The data ingestion service **should**:
+Each scraper run should log:
 
-* Scrape public course information.
-* Parse and normalize scraped data.
-* Maintain current course and section information in PostgreSQL.
-* Detect changes between ingestion cycles.
-* Produce structured logs.
-* Handle temporary Testudo or database failures gracefully.
+* When the scrape started
+* When it finished
+* Number of courses or sections processed
+* Number of database records updated
+* Errors that occurred
 
-The data ingestion service **should not**:
+Example:
 
-* Authenticate application users.
-* Store user passwords.
-* Send notification emails directly.
-* Handle frontend requests.
-* Automatically register students for courses.
+```text
+INFO - Availability scrape started
+INFO - Checked 84 sections
+INFO - Updated 6 sections
+INFO - Availability scrape completed
+```
 
-Those responsibilities belong to the UWA backend.
+## Running the Scrapers
 
-## Future Improvements
+Start the development API (this is also the Docker default):
 
-Potential improvements after the initial prototype include:
+```bash
+uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-* Asynchronous scraping for improved performance.
-* Request retries with exponential backoff.
-* Configurable scraping intervals.
-* Database transactions and batch upserts.
-* Historical section-availability snapshots.
-* Metrics for ingestion duration and failure rate.
-* Automated scheduled execution using a containerized worker or scheduled job.
+The initial scaffold exposes `GET /health`. Catalog and availability jobs can be
+added to the app once their scheduling and database schema are finalized.
+
+The intended command-line interface is:
+
+Run the course catalog scraper:
+
+```bash
+python -m src.main catalog
+```
+
+Run the availability scraper:
+
+```bash
+python -m src.main availability
+```
+
+Scheduling is external to this service. In production, a scheduler should run
+catalog jobs when terms are published and availability jobs at the desired
+interval; Uvicorn's `--reload` option is for local development only.
+
+## Goal
+
+The goal of this service is to maintain a reliable local database of UMD course information so the rest of the application does not need to scrape Testudo whenever a user searches for a course.
+
+Frequently monitored sections can then be checked every few minutes so users can quickly be notified when seats become available.
