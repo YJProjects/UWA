@@ -1,6 +1,6 @@
 """Domain models used by ingestion jobs."""
 
 from .course import Course
-from .section import Section
+from .section import Meeting, Section
 
-__all__ = ["Course", "Section"]
+__all__ = ["Course", "Meeting", "Section"]

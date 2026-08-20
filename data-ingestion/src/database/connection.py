@@ -18,5 +18,7 @@ class Database:
 
     @contextmanager
     def connection(self) -> Iterator[Connection]:
-        with psycopg.connect(self.database_url, row_factory=dict_row) as connection:
+        with psycopg.connect(
+            self.database_url, row_factory=dict_row
+        ) as connection:
             yield connection
