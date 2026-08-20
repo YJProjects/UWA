@@ -27,7 +27,7 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/trigger_catalog_scraper")
+@app.get("/api/cron/trigger_catalog_scraper")
 def trigger_catalog_scraper(
     semester: str = "202608",
     authorization: str | None = Header(default=None),
