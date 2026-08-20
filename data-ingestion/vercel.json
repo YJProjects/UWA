@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/trigger_catalog_scraper",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

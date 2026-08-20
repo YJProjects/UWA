@@ -1,0 +1,6 @@
+beautifulsoup4==4.13.4
+fastapi==0.116.1
+psycopg[binary]
+python-dotenv==1.1.1
+requests==2.32.4
+uvicorn[standard]==0.35.0
