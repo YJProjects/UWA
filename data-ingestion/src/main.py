@@ -1,13 +1,14 @@
 """ASGI and command-line entry points for data ingestion."""
 
 import argparse
+import hmac
 import logging
 from collections.abc import Sequence
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Header, HTTPException, status
 
 from src.catalog.create_semester_data import ingest_semester_data
-from src.config import validate_config
+from src.config import settings, validate_config
 
 
 app = FastAPI(title="UWA Data Ingestion")
@@ -27,7 +28,16 @@ def health() -> dict[str, str]:
 
 
 @app.get("/trigger_catalog_scraper")
-def trigger_catalog_scraper(semester: str = "202608") -> dict[str, int | str]:
+def trigger_catalog_scraper(
+    semester: str = "202608",
+    authorization: str | None = Header(default=None),
+) -> dict[str, int | str]:
+    expected_authorization = f"Bearer {settings.cron_secret}"
+    if authorization is None or not hmac.compare_digest(
+        authorization, expected_authorization
+    ):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
     courses_saved = ingest_semester_data(semester)
     return {
         "status": status.HTTP_200_OK,
